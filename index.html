@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Babi Simulação</title>
+<meta name="description" content="Simulador de atendimento do Babbi Babbi: ligue palavras PT↔EN e monte bibimbap e kimbap em inglês.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --paper:#F3F2EC; --card:#FFFFFF; --ink:#16162A; --ink-2:#4B4B63; --line:#16162A; --sh:#16162A;
+  --red:#D93A2B; --red-t:#FBE1DC; --blue:#1C54B2; --blue-t:#DCE7F8; --yellow:#F5B800; --yellow-t:#FDF0C2;
+  --green:#1F8A5B; --green-t:#D6EFE2; --purple:#6A3FA0; --purple-t:#E9DEF5; --ok:#1F8A5B; --bad:#D93A2B;
+  --display:"Black Han Sans","Noto Sans KR",system-ui,sans-serif;
+  --body:"Noto Sans KR",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#12121F; --card:#1D1D32; --ink:#F2F0EA; --ink-2:#B9B7CC; --line:#3E3E66; --sh:#05050C;
+    --red:#FF6B5B; --red-t:#3C1D1F; --blue:#7BA8FF; --blue-t:#16284D; --yellow:#FFCB3D; --yellow-t:#3A3111;
+    --green:#4FD08F; --green-t:#12342A; --purple:#BC94FF; --purple-t:#2B1F44; --ok:#4FD08F; --bad:#FF6B5B; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#12121F; --card:#1D1D32; --ink:#F2F0EA; --ink-2:#B9B7CC; --line:#3E3E66; --sh:#05050C;
+  --red:#FF6B5B; --red-t:#3C1D1F; --blue:#7BA8FF; --blue-t:#16284D; --yellow:#FFCB3D; --yellow-t:#3A3111;
+  --green:#4FD08F; --green-t:#12342A; --purple:#BC94FF; --purple-t:#2B1F44; --ok:#4FD08F; --bad:#FF6B5B; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+h1,h2,h3{margin:0;font-family:var(--display);font-weight:400;line-height:1.15;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1000px;margin-inline:auto;padding-inline:16px}
+.stripe{height:10px;background:repeating-linear-gradient(90deg,#1C54B2 0 40px,#D93A2B 40px 80px,#F5B800 80px 120px,#FFFFFF 120px 160px,#16162A 160px 200px)}
+.top{padding-block:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
+.brand b{font-family:var(--display);font-weight:400;font-size:1.8rem;line-height:1}
+.brand span{color:var(--ink-2);font-size:.85rem}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.pill{border:2px solid var(--line);border-radius:999px;padding:.15rem .7rem;font-weight:700;font-size:.85rem;background:var(--card)}
+.tabs{position:sticky;top:0;z-index:20;background:var(--paper);border-block:2px solid var(--line)}
+.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:8px;scrollbar-width:none}
+.tab{flex:none;border:2px solid transparent;background:none;padding:.4rem .95rem;border-radius:8px;font-weight:700}
+.tab:hover{border-color:var(--line)}
+.tab[aria-current="page"]{background:var(--ink);color:var(--paper)}
+main{padding-block:20px 56px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;box-shadow:4px 4px 0 var(--sh);padding:16px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.btn{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:.55rem 1rem;font-weight:700;box-shadow:3px 3px 0 var(--sh)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--sh)}
+.btn.pri{background:var(--yellow);color:#16162A}
+.btn.sm{padding:.3rem .7rem;font-size:.85rem;box-shadow:2px 2px 0 var(--sh)}
+.muted{color:var(--ink-2)}
+.hero{display:grid;gap:16px;grid-template-columns:1.3fr 1fr;align-items:center}
+@media(max-width:720px){.hero{grid-template-columns:1fr}}
+.hero h1{font-size:clamp(2rem,6vw,3.2rem)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{justify-content:space-between}
+.bar{height:10px;border-radius:99px;border:2px solid var(--line);background:var(--paper);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green)}
+.c-red{--x:var(--red);--xt:var(--red-t)} .c-blue{--x:var(--blue);--xt:var(--blue-t)} .c-yellow{--x:var(--yellow);--xt:var(--yellow-t)}
+.c-green{--x:var(--green);--xt:var(--green-t)} .c-purple{--x:var(--purple);--xt:var(--purple-t)}
+.deck{text-align:left;border:2px solid var(--line);border-left:10px solid var(--x);background:var(--xt);border-radius:12px;padding:12px;box-shadow:3px 3px 0 var(--sh);display:flex;flex-direction:column;gap:6px}
+.deck b{font-family:var(--display);font-weight:400;font-size:1.25rem}
+/* phase 1 */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:flex;flex-direction:column;gap:10px}
+.col h3{font-size:1rem;color:var(--ink-2)}
+.chip,.slot{border:2px solid var(--line);border-radius:12px;padding:.7rem .8rem;font-weight:700;text-align:left;min-height:52px;background:var(--xt,var(--card));box-shadow:3px 3px 0 var(--sh);touch-action:none;user-select:none}
+.chip{border-left:8px solid var(--x,var(--line))}
+.chip.sel{outline:4px solid var(--blue);transform:translateY(-2px)}
+.chip.done,.slot.done{opacity:.55;box-shadow:none;border-style:dashed}
+.slot{border-style:dashed;background:var(--card);font-weight:500}
+.slot.ok{background:var(--green-t);border-style:solid;font-weight:700}
+.slot.hot{outline:4px solid var(--yellow)}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.ghost{position:fixed;z-index:99;pointer-events:none;opacity:.92;transform:rotate(-3deg)}
+/* phase 2 */
+.p2{display:grid;gap:16px;grid-template-columns:1fr 1.25fr;align-items:start}
+@media(max-width:820px){.p2{grid-template-columns:1fr}}
+.cust{display:flex;gap:12px;align-items:flex-start}
+.avatar{font-size:2.6rem;width:64px;height:64px;border:2px solid var(--line);border-radius:50%;display:grid;place-items:center;background:var(--yellow-t);flex:none}
+.bubble{position:relative;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 14px;font-size:1.08rem;font-weight:500}
+.bubble.pt{background:var(--blue-t);font-size:.95rem;margin-top:8px}
+.hearts{font-size:1.2rem;letter-spacing:2px}
+.opts{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.opt{border:2px solid var(--line);border-bottom-width:5px;border-radius:12px;background:var(--xt);padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;font-weight:700;min-height:92px}
+.opt .e{font-size:1.8rem;line-height:1.1}
+.opt small{font-weight:400;color:var(--ink-2);font-size:.78rem}
+.opt.used{opacity:.4;pointer-events:none;border-style:dashed}
+.opt.bad{background:var(--red-t);border-color:var(--bad)}
+.pot{margin-top:14px;border:3px solid var(--line);border-radius:12px 12px 90px 90px;background:linear-gradient(var(--card),var(--yellow-t));min-height:140px;padding:12px 14px 34px;box-shadow:4px 4px 0 var(--sh)}
+.pot h3{font-size:1rem;color:var(--ink-2);margin-bottom:8px}
+.pot .items{display:flex;flex-wrap:wrap;gap:6px}
+.pi{border:2px solid var(--line);border-radius:999px;background:var(--xt,var(--card));padding:.15rem .6rem;font-weight:700;font-size:.9rem;animation:pop .3s}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.steps{display:flex;gap:6px;margin-bottom:10px}
+.steps i{flex:1;height:8px;border-radius:99px;background:var(--paper);border:2px solid var(--line)}
+.steps i.on{background:var(--yellow)} .steps i.ok{background:var(--green)}
+.ticket{font-family:ui-monospace,Menlo,Consolas,monospace;background:#fff;color:#16162A;border:2px dashed #16162A;padding:10px 12px;border-radius:6px;font-size:.9rem}
+.ticket div{display:flex;justify-content:space-between;gap:10px}
+.ticket div span:last-child{color:#555;text-align:right}
+.big{font-family:var(--display);font-size:2rem}
+.tog{display:flex;gap:6px;align-items:center;font-weight:500;font-size:.92rem}
+.tog input{width:20px;height:20px}
+.miss{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:6px 0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<header class="wrap top">
+  <svg width="52" height="52" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="34" r="26" fill="#16162A"/><circle cx="32" cy="32" r="22" fill="#fff"/><path d="M32 32 L32 10 A22 22 0 0 1 51 21 Z" fill="#1C54B2"/><path d="M32 32 L51 21 A22 22 0 0 1 51 43 Z" fill="#D93A2B"/><path d="M32 32 L51 43 A22 22 0 0 1 32 54 Z" fill="#F5B800"/><path d="M32 32 L32 54 A22 22 0 0 1 13 43 Z" fill="#fff"/><path d="M32 32 L13 43 A22 22 0 0 1 13 21 Z" fill="#16162A"/><path d="M32 32 L13 21 A22 22 0 0 1 32 10 Z" fill="#1F8A5B"/><circle cx="32" cy="32" r="6" fill="#F5B800" stroke="#16162A" stroke-width="2"/></svg>
+  <div class="brand"><b>Babi Simulação</b><span>Treino de atendimento em inglês · Babbi Babbi, Orlando</span></div>
+  <div class="stats" id="stats"></div>
+</header>
+<nav class="tabs"><div class="wrap" id="nav"></div></nav>
+<main class="wrap" id="app"></main>
+<script>
+"use strict";
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+let DELAY=650;
+const later=(fn,ms)=>{if(DELAY<=0)fn();else setTimeout(fn,ms==null?DELAY:ms)};
+function speak(t){try{const s=window.speechSynthesis;if(!s)return;s.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.92;s.speak(u)}catch(e){}}
+
+/* ---------- items ---------- */
+const IT={};
+function mk(id,en,pt,emo,col,say){IT[id]={id,en,pt,emo,col,say:say||en.toLowerCase()};return IT[id]}
+const BOWLS=[mk("bowl-reg","Regular bowl","Tigela comum","🥣","blue","regular bowl"),mk("bowl-hs","Hot Stone bowl","Tigela de pedra quente","🪨","blue","hot stone bowl")];
+const RICES=[mk("rice-white","White Rice","Arroz branco","🍚","yellow"),mk("rice-brown","Brown Rice","Arroz integral","🌾","yellow"),mk("rice-purple","Purple Rice","Arroz roxo","🟣","yellow"),mk("rice-kfr","Kimchi Fried Rice","Arroz frito com kimchi (picante)","🌶️","yellow")];
+const PROTS=[mk("p-bulgogi","Beef Bulgogi","Bulgogi de carne bovina","🥩","red"),mk("p-tofu","Tofu","Tofu (vegetariano)","⬜","red"),mk("p-spork","Spicy Pork","Porco picante","🐖","red"),mk("p-mpork","Marinated Pork","Porco marinado (sem pimenta)","🐷","red"),mk("p-schk","Spicy Chicken","Frango picante","🍗","red"),mk("p-mchk","Marinated Chicken","Frango marinado (sem pimenta)","🐔","red")];
+const ADDS=[mk("a-galbi","LA Galbi","Costela LA galbi (+$4)","🦴","red","LA galbi"),mk("a-shrimp","Garlic Shrimp","Camarão no alho (+$3)","🍤","red"),mk("a-pbelly","Pork Belly","Barriga de porco (+$3)","🥓","red")];
+const SIDES=[mk("s-spinach","Spinach","Espinafre","🥬","green"),mk("s-zucchini","Zucchini","Abobrinha","🥒","green"),mk("s-mushroom","Mushroom","Cogumelo","🍄","green","mushrooms"),mk("s-sprout","Bean Sprout","Broto de soja","🌱","green","bean sprouts"),mk("s-radish","Radish","Rabanete","🔴","green"),mk("s-carrot","Carrot","Cenoura","🥕","green","carrots"),mk("s-fishcake","Fish Cake","Massa de peixe (fish cake)","🍥","green"),mk("s-japchae","Japchae","Macarrão de batata-doce (japchae)","🍜","green"),mk("s-egg","Egg (Sunny-side Up)","Ovo frito, gema mole","🍳","green","sunny-side up egg")];
+const EXTRAS=[mk("x-corn","Sweet corn","Milho doce (+$2)","🌽","purple"),mk("x-mozz","Mozzarella cheese","Muçarela (+$2)","🧀","purple")];
+const SAUCES=[mk("sc-gochu","Gochujang","Gochujang: pasta de pimenta (picante)","🌶️","purple"),mk("sc-ganjang","Ganjang","Ganjang: molho de shoyu da casa (suave)","🫙","purple")];
+
+function emoFor(en){const s=en.toLowerCase();const t=[["egg","🍳"],["fish cake","🍥"],["radish","🟡"],["spinach","🥬"],["carrot","🥕"],["lettuce","🥗"],["tuna","🐟"],["perilla","🍃"],["chicken","🍗"],["bulgogi","🥩"],["short rib","🦴"],["pork belly","🥓"],["cutlet","🍖"],["pork","🐖"],["garlic","🧄"],["soybean","🫘"],["shrimp","🍤"],["krab","🦀"],["sweet potato","🍠"],["mayo","🥫"],["cucumber","🥒"],["avocado","🥑"],["cream cheese","🧀"]];for(const [k,v] of t)if(s.includes(k))return v;return "🍙"}
+const KCOL={egg:"yellow",lettuce:"green",spinach:"green",carrot:"red",radish:"yellow"};
+function kIng(en,pt){const id="k-"+en.toLowerCase().replace(/[^a-z]+/g,"-");if(!IT[id]){const col=["blue","red","yellow","green","purple"][Object.keys(IT).length%5];mk(id,en,pt,emoFor(en),col)}return id}
+const KB_RAW=[
+ ["kb-original","Original Kimbap","Kimbap clássico",[["Egg","Ovo"],["Fish cake","Massa de peixe"],["Pickled radish","Nabo amarelo em conserva"],["Spinach","Espinafre"],["Carrot","Cenoura"]]],
+ ["kb-veggie","Veggie Kimbap","Kimbap vegetariano",[["Lettuce","Alface"],["Pickled radish","Nabo amarelo em conserva"],["Carrot","Cenoura"],["Spinach","Espinafre"]],true],
+ ["kb-bulgogi","Bulgogi Kimbap","Kimbap de carne bulgogi",[["Bulgogi beef","Bulgogi (carne marinada)"],["Egg","Ovo"],["Pickled radish","Nabo amarelo em conserva"],["Spinach","Espinafre"],["Carrot","Cenoura"]]],
+ ["kb-tuna","Tuna Kimbap","Kimbap de atum",[["Seasoned tuna","Atum temperado"],["Perilla leaf","Folha de perilla"],["Pickled radish","Nabo amarelo em conserva"]]],
+ ["kb-chicken","Chicken Kimbap","Kimbap de frango grelhado",[["BBQ chicken","Frango grelhado BBQ"],["Lettuce","Alface"],["Pickled radish","Nabo amarelo em conserva"]]],
+ ["kb-porkbelly","Pork Belly Kimbap","Kimbap de barriga de porco",[["Pork belly","Barriga de porco"],["Crispy garlic","Alho crocante"],["Perilla leaf","Folha de perilla"],["Soybean paste","Pasta de soja (doenjang)"]]],
+ ["kb-galbi","Galbi Kimbap","Kimbap de costela LA galbi",[["LA short rib","Costela estilo LA"],["Egg","Ovo"],["Pickled radish","Nabo amarelo em conserva"],["Spinach","Espinafre"],["Carrot","Cenoura"]]],
+ ["kb-spicypork","Spicy Pork Kimbap","Kimbap de porco picante",[["Spicy pork","Porco picante"],["Perilla leaf","Folha de perilla"],["Pickled radish","Nabo amarelo em conserva"]],false,true],
+ ["kb-tonkatsu","Tonkatsu Kimbap","Kimbap de costeleta empanada",[["Pork cutlet","Costeleta de porco empanada"],["Lettuce","Alface"],["Pickled radish","Nabo amarelo em conserva"],["Carrot","Cenoura"]]],
+ ["kb-shrimpkrab","Shrimp & Krab Kimbap","Kimbap de camarão crocante e kani",[["Coconut shrimp","Camarão crocante com coco"],["Spicy krab mix","Mistura picante de kani"]]],
+ ["kb-sweetpotato","Sweet Potato Kimbap","Kimbap de batata-doce crocante",[["Sweet potato","Batata-doce crocante"],["Spicy mayo","Maionese picante"]]]
+];
+const KB=KB_RAW.map(r=>{const d=mk(r[0],r[1],r[2],"🍙","green",r[1]);return {id:r[0],en:r[1],pt:r[2],ing:r[3].map(x=>kIng(x[0],x[1])),veg:!!r[4],spicy:!!r[5]}});
+const KDECOY=[["Cucumber","Pepino"],["Avocado","Abacate"],["Cream cheese","Cream cheese"]].map(x=>kIng(x[0],x[1]));
+const KALL=Array.from(new Set(KB.flatMap(k=>k.ing)));
+const PHR=[["Hi, what can I get for you?","Oi, o que posso servir?"],["For here or to go?","Para comer aqui ou para viagem?"],["Any allergies?","Alguma alergia?"],["Would you like it spicy?","Quer picante?"],["On the side, please","À parte, por favor"],["No mushrooms, please","Sem cogumelo, por favor"],["Extra sauce, please","Molho extra, por favor"],["Anything else?","Mais alguma coisa?"],["It will be ready in ten minutes","Fica pronto em dez minutos"],["Careful, the bowl is hot","Cuidado, a tigela está quente"],["Here you go, enjoy!","Aqui está, bom apetite!"],["Can I get a refill?","Pode encher de novo?"]].map((p,i)=>mk("ph-"+i,p[0],p[1],"💬","blue",p[0]));
+
+/* ---------- decks for phase 1 ---------- */
+const DECKS=[
+ {id:"bowl",t:"Tigela, arroz e molhos",c:"yellow",items:()=>[...BOWLS,...RICES,...SAUCES]},
+ {id:"prot",t:"Proteínas e adicionais",c:"red",items:()=>[...PROTS,...ADDS]},
+ {id:"side",t:"Acompanhamentos e extras",c:"green",items:()=>[...SIDES,...EXTRAS]},
+ {id:"kimi",t:"Recheios do kimbap",c:"blue",items:()=>KALL.map(i=>IT[i])},
+ {id:"kimn",t:"Nomes dos kimbaps",c:"purple",items:()=>KB.map(k=>IT[k.id])},
+ {id:"phr",t:"Frases do atendimento",c:"blue",items:()=>PHR},
+ {id:"all",t:"Tudo misturado",c:"red",items:()=>[...BOWLS,...RICES,...PROTS,...ADDS,...SIDES,...EXTRAS,...SAUCES,...KALL.map(i=>IT[i]),...KB.map(k=>IT[k.id])]},
+ {id:"miss",t:"Meus erros",c:"red",items:()=>Object.keys(LS.get("bs_miss",{})).map(i=>IT[i]).filter(Boolean),min:4}
+];
+/* ---------- progress ---------- */
+function bump(key,id,n){const m=LS.get(key,{});m[id]=(m[id]||0)+(n||1);LS.set(key,m)}
+function stats(){const b=LS.get("bs_best",0),r=LS.get("bs_rounds",0);$("#stats").innerHTML='<span class="pill">🏆 Recorde: '+b+'</span><span class="pill">🧩 Rodadas: '+r+'</span>'}
+const TABS=[["home","Início"],["p1","Fase 1 · Encaixe"],["p2","Fase 2 · Panela"],["rev","Revisão"]];
+let TAB="home";
+function go(t){TAB=t;$("#nav").innerHTML=TABS.map(x=>'<button class="tab" type="button" data-tab="'+x[0]+'"'+(x[0]===t?' aria-current="page"':'')+'>'+x[1]+'</button>').join("");
+  if(t==="home")home();else if(t==="p1"){P1=null;p1Pick()}else if(t==="p2"){S=null;p2Pick()}else rev();
+  stats();window.scrollTo&&window.scrollTo(0,0)}
+const app=()=>$("#app");
+
+/* ---------- home ---------- */
+function home(){
+app().innerHTML=`<section class="hero"><div><p class="muted" style="font-weight:700">SIMULADOR DE ATENDIMENTO</p><h1>Chegou um cliente. O que vai na panela?</h1>
+<p style="margin:10px 0 16px">Primeiro você liga as palavras em inglês e português. Depois atende clientes de verdade (simulados): ele fala em inglês e você monta o <b>bibimbap</b> ou o <b>kimbap</b> escolhendo os ingredientes, como no Duolingo.</p>
+<div class="row"><button class="btn pri" type="button" data-tab="p1">Fase 1 · Encaixe</button><button class="btn" type="button" data-tab="p2">Fase 2 · Panela</button></div></div>
+<div class="card" style="text-align:center"><div style="font-size:4rem">🍚🥢🍙</div><p class="muted">O pedido é sorteado a cada cliente: tigela, arroz, proteína, acompanhamentos que ele não quer, extras e molho. Nunca é igual.</p></div></section>
+<section class="grid g3" style="margin-top:22px">
+<div class="card"><h3>1 · Encaixe</h3><p class="muted" style="margin-top:6px">Clique na palavra e depois no significado (ou arraste). Rodadas de 6 pares, com voz em inglês.</p></div>
+<div class="card"><h3>2 · Panela</h3><p class="muted" style="margin-top:6px">O cliente pede em inglês. Você toca nos ingredientes certos, passo a passo. Errou? Perde um coração.</p></div>
+<div class="card"><h3>3 · Revisão</h3><p class="muted" style="margin-top:6px">O app guarda o que você erra e monta uma rodada só com esses itens.</p></div></section>`}
+
+/* ---------- phase 1 ---------- */
+let P1=null;
+function mastery(d){const ok=LS.get("bs_ok",{});const it=d.items();if(!it.length)return 0;return Math.round(100*it.filter(i=>(ok[i.id]||0)>=2).length/it.length)}
+function p1Pick(){
+const ds=DECKS.filter(d=>d.items().length>=(d.min||6));
+app().innerHTML=`<h2>Fase 1 · Encaixe</h2><p class="muted" style="margin:6px 0 16px">Escolha um grupo. Cada rodada sorteia 6 itens.</p><div class="grid g3">`+ds.map(d=>`<button class="deck c-${d.c}" type="button" data-deck="${d.id}"><b>${esc(d.t)}</b><span class="muted">${d.items().length} itens · dominado: ${mastery(d)}%</span><span class="bar"><i style="width:${mastery(d)}%"></i></span></button>`).join("")+`</div>`}
+function p1Start(id,dir){
+const d=DECKS.find(x=>x.id===id);const items=shuffle(d.items()).slice(0,6);
+P1={deck:d,items,dir:dir||(P1&&P1.dir)||"en",left:shuffle(items.map(i=>i.id)),right:shuffle(items.map(i=>i.id)),matched:[],sel:null,errors:0,missed:{},done:false};p1Render()}
+function p1Render(){
+const q=P1;const en=q.dir==="en";
+const lab=(id,side)=>side==="L"?(en?IT[id].en:IT[id].pt):(en?IT[id].pt:IT[id].en);
+const chips=q.left.map(id=>`<button type="button" class="chip c-${IT[id].col}${q.sel===id?" sel":""}${q.matched.includes(id)?" done":""}" data-chip="${id}"${q.matched.includes(id)?" disabled":""}>${IT[id].emo} ${esc(lab(id,"L"))}</button>`).join("");
+const slots=q.right.map(id=>q.matched.includes(id)?`<div class="slot ok" data-slot="${id}">✅ ${esc(IT[id].en)}<br><small class="muted">${esc(IT[id].pt)}</small></div>`:`<button type="button" class="slot" data-slot="${id}">${esc(lab(id,"R"))}</button>`).join("");
+app().innerHTML=`<div class="row sp" style="margin-bottom:12px"><div><h2>${esc(q.deck.t)}</h2><p class="muted">Encaixe cada palavra no significado certo. Erros: <b>${q.errors}</b></p></div><div class="row"><button class="btn sm" type="button" data-dir="1">${en?"EN → PT":"PT → EN"} ⇄</button><button class="btn sm" type="button" data-tab="p1">Trocar grupo</button></div></div>
+<div class="match"><div class="col"><h3>${en?"English":"Português"}</h3>${chips}</div><div class="col"><h3>${en?"Português":"English"}</h3>${slots}</div></div>`
++(q.matched.length===q.items.length?p1Result():"")}
+function p1Result(){const e=P1.errors,st=e===0?3:e<=2?2:1;
+return `<div class="card" style="margin-top:18px;text-align:center"><div class="big">${"⭐".repeat(st)}${"☆".repeat(3-st)}</div><p>${e===0?"Perfeito, sem nenhum erro!":"Rodada concluída com "+e+" erro(s)."}</p><div class="row" style="justify-content:center;margin-top:10px"><button class="btn pri" type="button" data-next1="1">Próxima rodada</button><button class="btn" type="button" data-tab="p1">Trocar grupo</button></div></div>`}
+function p1Try(src,slot){
+if(!P1||P1.matched.includes(src))return;
+if(src===slot){P1.matched.push(src);if(!P1.missed[src])bump("bs_ok",src);P1.sel=null;speak(IT[src].en);
+  if(P1.matched.length===P1.items.length){LS.set("bs_rounds",LS.get("bs_rounds",0)+1);stats()}
+  p1Render()}
+else{P1.errors++;P1.missed[src]=1;bump("bs_miss",src);bump("bs_miss",slot,0);
+  P1.sel=null;const a=$('[data-chip="'+src+'"]'),b=$('[data-slot="'+slot+'"]');if(a)a.classList.remove("sel");[a,b].forEach(x=>{if(x){x.classList.add("shake");setTimeout(()=>x.classList.remove("shake"),400)}});
+  const m=$("#app p.muted b");if(m)m.textContent=P1.errors}}
+
+/* ---------- phase 2: order generator ---------- */
+const NAMES=[["Emma","👩‍🦰"],["Jake","🧑‍🦱"],["Sofia","👩"],["Liam","🧔"],["Olivia","👱‍♀️"],["Noah","👨‍🦲"],["Ava","👩‍🦳"],["Ethan","🧑‍🦰"],["Grace","👩‍🦱"],["Mason","👨"]];
+const sayList=a=>{const s=a.map(x=>x.say);return s.length<2?s.join(""):s.slice(0,-1).join(", ")+" and "+s[s.length-1]};
+const ptList=a=>{const s=a.map(x=>x.pt.replace(/\s*\(.*?\)/g,"").replace(/:.*/,"").toLowerCase());return s.length<2?s.join(""):s.slice(0,-1).join(", ")+" e "+s[s.length-1]};
+function genBib(){
+const bowl=pick(BOWLS),rice=pick(RICES),prot=pick(PROTS),add=Math.random()<.35?pick(ADDS):null;
+const except=Math.random()<.5;let sides,removed=[];
+if(except){removed=shuffle(SIDES).slice(0,Math.random()<.5?2:1);sides=SIDES.filter(s=>!removed.includes(s))}
+else{const keep=shuffle(SIDES).slice(0,3+Math.floor(Math.random()*3));sides=SIDES.filter(s=>keep.includes(s))}
+const extras=Math.random()<.4?[pick(EXTRAS)]:[];const sauce=pick(SAUCES);const hs=bowl===BOWLS[1];
+const want=pick(["I'll have","I'd like","I'd like to order","Let me get"]);
+const sl=sauce===SAUCES[0]?pick(["Gochujang on the side, please.","I'll take the gochujang sauce."]):pick(["Ganjang on the side, please.","I don't like it spicy, so ganjang, please."]);
+const say=pick(["Hi there!","Hello!","Good evening!","Hey, how's it going?"])+" "+want+" "+(hs?"a hot stone bibimbap":"a bibimbap in a regular bowl")+" with "+rice.say+" and "+prot.say+"."
+ +(add?" Could you add "+add.say+" too?":"")+" "+(except?"For the veggies, everything except "+sayList(removed)+".":"For the sides, just "+sayList(sides)+".")
+ +(extras.length?" And extra "+sayList(extras)+", please.":"")+" "+sl;
+const pt="Oi! Quero um bibimbap "+(hs?"na tigela de pedra quente":"na tigela comum")+" com "+ptList([rice])+" e "+ptList([prot])+"."+(add?" Pode adicionar "+ptList([add])+".":"")+" "+(except?"Nos acompanhamentos, tudo menos "+ptList(removed)+".":"Nos acompanhamentos, só "+ptList(sides)+".")+(extras.length?" Extra de "+ptList(extras)+".":"")+" Molho "+ptList([sauce])+" à parte.";
+const A=a=>a.map(x=>x.id);
+return {type:"bib",dish:"Bibimbap",say,pt,steps:[
+ {t:"Tigela",en:"Bowl",opts:A(BOWLS),req:[bowl.id]},
+ {t:"Arroz",en:"Rice",opts:A(RICES),req:[rice.id]},
+ {t:"Proteína",en:"Protein",opts:[...A(PROTS),...A(ADDS)],req:[prot.id,...(add?[add.id]:[])]},
+ {t:"Acompanhamentos",en:"Sides",opts:A(SIDES),req:A(sides)},
+ {t:"Extras e molho",en:"Extras & sauce",opts:[...A(EXTRAS),...A(SAUCES)],req:[...A(extras),sauce.id]}]}}
+let lastKB=null;
+function genKim(){
+let d;do{d=pick(KB)}while(d.id===lastKB&&KB.length>1);lastKB=d.id;
+const nm=pick(["I'll have","I'd like","I'd like to order","Let me get"]);
+const say=pick(["Hi there!","Hello!","Good evening!","Hey!"])+" "+(d.veg&&Math.random()<.4?"I'm vegetarian. ":"")+(d.spicy&&Math.random()<.4?"I want something spicy. ":"")+nm+" one "+d.en+pick([", please.",", to go, please.","."]);
+const pt="Oi! Quero um "+d.pt.toLowerCase()+", por favor.";
+const decoys=shuffle([...KALL,...KDECOY].filter(i=>!d.ing.includes(i))).slice(0,Math.max(4,10-d.ing.length));
+return {type:"kim",dish:d.en,say,pt,steps:[{t:"Recheios do "+d.pt.replace(/^Kimbap (de |)/,"kimbap de ").replace(/^kimbap de kimbap/,"kimbap"),en:"Kimbap fillings",opts:shuffle([...d.ing,...decoys]),req:d.ing.slice()}]}}
+
+/* ---------- phase 2: shift ---------- */
+let S=null;
+function p2Pick(){
+app().innerHTML=`<h2>Fase 2 · Panela</h2><p class="muted" style="margin:6px 0 16px">Escolha o tipo de pedido e as ajudas.</p>
+<div class="grid g3"><button class="deck c-red" type="button" data-mode="bib"><b>🥣 Bibimbap</b><span class="muted">Tigela, arroz, proteína, acompanhamentos, extras e molho.</span></button>
+<button class="deck c-green" type="button" data-mode="kim"><b>🍙 Kimbap</b><span class="muted">O cliente diz o nome, você acerta os recheios.</span></button>
+<button class="deck c-yellow" type="button" data-mode="mix"><b>🎲 Misto</b><span class="muted">Clientes sortidos de bibimbap e kimbap.</span></button></div>
+<div class="card" style="margin-top:18px"><div class="row" style="gap:20px"><label class="tog"><input type="checkbox" id="o-hint" ${LS.get("bs_hint",true)?"checked":""}> Dicas em português nos botões</label>
+<label class="tog"><input type="checkbox" id="o-listen" ${LS.get("bs_listen",false)?"checked":""}> Modo escuta (esconde o texto do cliente)</label>
+<label class="tog">Clientes por turno <select id="o-n"><option>5</option><option selected>10</option></select></label></div></div>`}
+function p2Start(mode){
+LS.set("bs_hint",$("#o-hint").checked);LS.set("bs_listen",$("#o-listen").checked);
+S={mode,hint:$("#o-hint").checked,listen:$("#o-listen").checked,total:+$("#o-n").value,n:0,score:0,perfect:0,lost:0,shiftMiss:{},cur:null};nextCust()}
+function nextCust(){
+if(S.n>=S.total){return shiftEnd()}
+S.n++;const t=S.mode==="mix"?pick(["bib","kim"]):S.mode;const o=t==="bib"?genBib():genKim();
+const nm=pick(NAMES);Object.assign(S,{cur:o,who:nm,step:0,pot:[],picked:[],hearts:5,wrongs:0,state:"play",showPt:false,showTxt:!S.listen,flash:null});
+render2();speak(o.say)}
+function render2(){
+const o=S.cur,st=o.steps[S.step];
+const hearts="❤️".repeat(S.hearts)+"🖤".repeat(5-S.hearts);
+const bar=o.steps.map((x,i)=>`<i class="${i<S.step||(S.state!=="play"&&S.state!=="adv")?"ok":i===S.step?"on":""}"></i>`).join("");
+const bubble=S.showTxt?esc(o.say):'<span class="muted">🔊 Cliente falando... toque em “Ouvir”.</span>';
+const left=`<div class="card"><div class="row sp"><b>Cliente ${S.n}/${S.total}</b><span class="hearts" title="Corações">${hearts}</span></div>
+<div class="cust" style="margin-top:10px"><div class="avatar">${S.who[1]}</div><div style="flex:1"><b>${S.who[0]}</b><div class="bubble">${bubble}</div>${S.showPt?`<div class="bubble pt">${esc(o.pt)}</div>`:""}</div></div>
+<div class="row" style="margin-top:12px"><button class="btn sm" type="button" data-hear="1">🔊 Ouvir</button>${S.showTxt?"":'<button class="btn sm" type="button" data-showtxt="1">Mostrar texto</button>'}<button class="btn sm" type="button" data-showpt="1">🇧🇷 ${S.showPt?"Esconder":"Ver"} tradução</button></div></div>`;
+const pot=`<div class="pot"><h3>Panela · ${esc(o.dish)}</h3><div class="items">${S.pot.map(id=>`<span class="pi c-${IT[id].col}">${IT[id].emo} ${esc(IT[id].en)}</span>`).join("")||'<span class="muted">Vazia. Escolha os ingredientes.</span>'}</div></div>`;
+let right;
+if(S.state==="play"||S.state==="adv"){
+ right=`<div class="card"><div class="steps">${bar}</div><div class="row sp"><h3>Passo ${S.step+1}/${o.steps.length} · ${esc(st.t)}</h3><span class="muted">${esc(st.en)}${st.req.length>1?" · escolha "+st.req.length:""}</span></div>
+ <div class="opts" style="margin-top:12px">${st.opts.map(id=>`<button type="button" class="opt c-${IT[id].col}${S.picked.includes(id)?" used":""}${S.flash===id?" bad":""}" data-opt="${id}"><span class="e">${IT[id].emo}</span>${esc(IT[id].en)}${S.hint?`<small>${esc(IT[id].pt)}</small>`:""}</button>`).join("")}</div>${pot}</div>`}
+else if(S.state==="served"){
+ const pts=Math.max(20,100-20*S.wrongs);
+ right=`<div class="card" style="text-align:center"><div class="big">${S.wrongs===0?"Perfeito! 🎉":"Pedido entregue ✔️"}</div><p>+${pts} pontos${S.wrongs?" ("+S.wrongs+" erro(s))":""}</p>${ticket(o)}<div class="row" style="justify-content:center;margin-top:12px"><button class="btn pri" type="button" data-next2="1">${S.n>=S.total?"Ver resultado":"Próximo cliente"}</button></div></div>`}
+else{ right=`<div class="card" style="text-align:center"><div class="big">O cliente foi embora 😞</div><p class="muted">Acabaram os corações. Veja o pedido certo:</p>${ticket(o)}<div class="row" style="justify-content:center;margin-top:12px"><button class="btn pri" type="button" data-next2="1">${S.n>=S.total?"Ver resultado":"Próximo cliente"}</button></div></div>`}
+app().innerHTML=`<div class="row sp" style="margin-bottom:12px"><span class="pill">Pontos: ${S.score}</span><button class="btn sm" type="button" data-tab="p2">Sair do turno</button></div><div class="p2">${left}${right}</div>`}
+function ticket(o){return `<div class="ticket" style="margin-top:10px;text-align:left"><div><b>${esc(o.dish.toUpperCase())}</b><span>pedido</span></div>`+o.steps.map(s=>`<div><span>${esc(s.en)}: ${s.req.map(i=>esc(IT[i].en)).join(", ")}</span><span>${s.req.map(i=>esc(IT[i].pt.replace(/\s*\(.*?\)/g,"").replace(/:.*/,""))).join(", ")}</span></div>`).join("")+`</div>`}
+function p2Pick1(id){
+if(!S||S.state!=="play")return;
+const st=S.cur.steps[S.step];
+if(S.picked.includes(id))return;
+if(st.req.includes(id)){S.picked.push(id);S.pot.push(id);S.flash=null;speak(IT[id].en);
+  if(st.req.every(r=>S.picked.includes(r))){S.state="adv";render2();later(()=>{S.step++;S.picked=[];if(S.step>=S.cur.steps.length){S.state="served";S.score+=Math.max(20,100-20*S.wrongs);if(S.wrongs===0)S.perfect++}else S.state="play";render2()})}
+  else render2()}
+else{S.wrongs++;S.hearts--;S.flash=id;
+  st.req.filter(r=>!S.picked.includes(r)).forEach(r=>{bump("bs_miss",r);S.shiftMiss[r]=1});
+  if(S.hearts<=0){S.state="lost";S.lost++}
+  render2();later(()=>{if(S.state==="play"){S.flash=null;render2()}},600)}}
+function shiftEnd(){
+const best=LS.get("bs_best",0);const nb=S.score>best;if(nb)LS.set("bs_best",S.score);stats();
+const ms=Object.keys(S.shiftMiss).map(i=>IT[i]);
+app().innerHTML=`<div class="card" style="text-align:center"><div class="big">Turno encerrado</div><p style="font-size:1.4rem;margin:6px 0"><b>${S.score}</b> pontos ${nb?"· 🏆 novo recorde!":""}</p><p class="muted">${S.perfect} pedido(s) perfeito(s) de ${S.total} · ${S.lost} cliente(s) perdido(s)</p>
+${ms.length?`<div style="text-align:left;margin-top:14px"><b>Para revisar neste turno</b>${ms.map(i=>`<div class="miss"><span>${i.emo} ${esc(i.en)}</span><span class="muted">${esc(i.pt)}</span></div>`).join("")}</div>`:'<p style="margin-top:12px">Nenhum erro neste turno. 👏</p>'}
+<div class="row" style="justify-content:center;margin-top:14px"><button class="btn pri" type="button" data-tab="p2">Novo turno</button>${ms.length?'<button class="btn" type="button" data-tab="p1">Treinar no Encaixe</button>':""}<button class="btn" type="button" data-tab="home">Início</button></div></div>`}
+
+/* ---------- review ---------- */
+function rev(){
+const m=LS.get("bs_miss",{});const ids=Object.keys(m).filter(i=>IT[i]&&m[i]>0).sort((a,b)=>m[b]-m[a]).slice(0,30);
+app().innerHTML=`<h2>Revisão</h2><p class="muted" style="margin:6px 0 14px">Os itens que mais te fizeram errar. Clique em ouvir para treinar a pronúncia.</p><div class="card">`+(ids.length?ids.map(i=>`<div class="miss"><span>${IT[i].emo} <b>${esc(IT[i].en)}</b> <button class="btn sm" type="button" data-say="${i}">🔊</button></span><span class="muted">${esc(IT[i].pt)} · ${m[i]}x</span></div>`).join("")+`<div class="row" style="margin-top:12px"><button class="btn pri" type="button" data-deck="miss">Praticar meus erros</button><button class="btn" type="button" data-clear="1">Limpar histórico</button></div>`:'<p class="muted">Ainda sem erros registrados. Jogue uma rodada primeiro.</p>')+`</div>`}
+
+/* ---------- drag + events ---------- */
+let DR=null;
+document.addEventListener("pointerdown",e=>{const c=e.target.closest&&e.target.closest("[data-chip]");if(!c||c.disabled||!P1)return;DR={id:c.dataset.chip,el:c,x:e.clientX,y:e.clientY,g:null}});
+document.addEventListener("pointermove",e=>{if(!DR)return;
+ if(!DR.g&&Math.hypot(e.clientX-DR.x,e.clientY-DR.y)>8){const g=DR.el.cloneNode(true);g.className+=" ghost";g.style.width=DR.el.offsetWidth+"px";document.body.appendChild(g);DR.g=g}
+ if(DR.g){DR.g.style.left=(e.clientX-30)+"px";DR.g.style.top=(e.clientY-24)+"px"}});
+document.addEventListener("pointerup",e=>{if(!DR)return;const d=DR;DR=null;if(!d.g)return;d.g.remove();d.moved=true;
+ const t=document.elementFromPoint?document.elementFromPoint(e.clientX,e.clientY):null;const s=t&&t.closest("[data-slot]");
+ DRAGGED=true;setTimeout(()=>DRAGGED=false,50);
+ if(s&&!s.classList.contains("ok"))p1Try(d.id,s.dataset.slot)});
+let DRAGGED=false;
+document.addEventListener("click",e=>{
+const t=e.target.closest("button,[data-slot]");if(!t||DRAGGED)return;const D=t.dataset;
+if(D.tab){go(D.tab)}
+else if(D.deck){if(TAB==="rev"){TAB="p1";go("p1")}P1=null;p1Start(D.deck)}
+else if(D.chip){if(!P1)return;P1.sel=P1.sel===D.chip?null:D.chip;p1Render()}
+else if(D.slot){if(!P1||t.classList.contains("ok"))return;if(P1.sel)p1Try(P1.sel,D.slot);else{t.classList.add("hot");setTimeout(()=>t.classList.remove("hot"),500)}}
+else if(D.dir){const nd=P1.dir==="en"?"pt":"en";P1.dir=nd;P1.sel=null;p1Render()}
+else if(D.next1){p1Start(P1.deck.id)}
+else if(D.mode){p2Start(D.mode)}
+else if(D.opt){p2Pick1(D.opt)}
+else if(D.hear){speak(S.cur.say)}
+else if(D.showtxt){S.showTxt=true;render2()}
+else if(D.showpt){S.showPt=!S.showPt;render2()}
+else if(D.next2){nextCust()}
+else if(D.say){speak(IT[D.say].en)}
+else if(D.clear){LS.set("bs_miss",{});rev()}
+});
+go("home");
+
+</script>
+</body>
+</html>
